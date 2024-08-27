@@ -86,9 +86,16 @@ export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
             acceleration.x += 1;
         }
         acceleration.normalize();
-        acceleration.multiplyScalar(accelerationMagnitude * deltaTime * deltaTime);
+        acceleration.multiplyScalar(
+            accelerationMagnitude * deltaTime * deltaTime,
+        );
         const FRICTION = 0.2;
-        acceleration.add(new THREE.Vector3().copy(velocity).negate().multiplyScalar(FRICTION));
+        acceleration.add(
+            new THREE.Vector3()
+                .copy(velocity)
+                .negate()
+                .multiplyScalar(FRICTION),
+        );
         velocity.add(acceleration);
         cube.position.add(velocity);
         renderer.render(scene, camera);
