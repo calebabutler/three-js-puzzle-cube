@@ -66,26 +66,30 @@ export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
     });
 
     let lastTime = 0;
+    const velocity = new THREE.Vector3(0, 0, 0);
     const animate: XRFrameRequestCallback = (time) => {
         const deltaTime = (time - lastTime) / 1000;
         lastTime = time;
 
-        const velocity = new THREE.Vector3(0, 0, 0);
-        const speed = 5;
+        const acceleration = new THREE.Vector3(0, 0, 0);
+        const accelerationMagnitude = 500; // units/second^2
         if (keyState["w"]) {
-            velocity.z -= 1;
+            acceleration.z -= 1;
         }
         if (keyState["s"]) {
-            velocity.z += 1;
+            acceleration.z += 1;
         }
         if (keyState["a"]) {
-            velocity.x -= 1;
+            acceleration.x -= 1;
         }
         if (keyState["d"]) {
-            velocity.x += 1;
+            acceleration.x += 1;
         }
-        velocity.normalize();
-        velocity.multiplyScalar(speed * deltaTime);
+        acceleration.normalize();
+        acceleration.multiplyScalar(accelerationMagnitude * deltaTime * deltaTime);
+        const FRICTION = 0.2;
+        acceleration.add(new THREE.Vector3().copy(velocity).negate().multiplyScalar(FRICTION));
+        velocity.add(acceleration);
         cube.position.add(velocity);
         renderer.render(scene, camera);
     };
