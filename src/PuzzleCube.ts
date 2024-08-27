@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
 export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
     const scene = new THREE.Scene();
@@ -54,12 +54,39 @@ export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
     directionalLight5.position.set(0, 0, -2);
     scene.add(directionalLight5);
 
-    camera.position.x = 5;
+    camera.position.z = 5;
     camera.lookAt(cube.position);
 
-    const animate = () => {
-        //cube.rotation.x += 0.01;
-        //cube.rotation.y += 0.01;
+    const keyState: { [key: string]: boolean } = {};
+    canvas.addEventListener("keydown", (e) => {
+        keyState[e.key] = true;
+    });
+    canvas.addEventListener("keyup", (e) => {
+        keyState[e.key] = false;
+    });
+
+    let lastTime = 0;
+    const animate: XRFrameRequestCallback = (time) => {
+        const deltaTime = (time - lastTime) / 1000;
+        lastTime = time;
+
+        const velocity = new THREE.Vector3(0, 0, 0);
+        const speed = 5;
+        if (keyState["w"]) {
+            velocity.z -= 1;
+        }
+        if (keyState["s"]) {
+            velocity.z += 1;
+        }
+        if (keyState["a"]) {
+            velocity.x -= 1;
+        }
+        if (keyState["d"]) {
+            velocity.x += 1;
+        }
+        velocity.normalize();
+        velocity.multiplyScalar(speed * deltaTime);
+        cube.position.add(velocity);
         renderer.render(scene, camera);
     };
     renderer.setAnimationLoop(animate);

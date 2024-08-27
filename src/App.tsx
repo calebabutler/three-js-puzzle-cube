@@ -11,7 +11,7 @@ const App = () => {
         }
     }, [canvasRef]);
 
-    return <canvas ref={canvasRef} />;
+    return <canvas tabIndex={0} ref={canvasRef} />;
 };
 
 export default App;
