@@ -18,7 +18,7 @@ export default class PuzzleCube {
     private canvas: HTMLCanvasElement;
     private renderer: THREE.WebGLRenderer;
     private keyState: { [key: string]: boolean };
-    private cubie: Cubie;
+    private cubies: Cubie[];
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -35,7 +35,138 @@ export default class PuzzleCube {
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
         this.keyState = {};
-        this.cubie = new Cubie([WHITE, YELLOW, GREEN, BLUE, ORANGE, RED]);
+        this.cubies = [];
+
+        this.pushCenterCubies();
+        this.pushEdgeCubies();
+        this.pushCornerCubies();
+    }
+
+    private pushCubie(
+        colors: [number, number, number, number, number, number],
+        position: THREE.Vector3,
+    ): void {
+        const cubie = new Cubie(colors);
+        cubie.setPosition(position);
+        this.cubies.push(cubie);
+    }
+
+    private pushCenterCubies(): void {
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLACK, BLACK, BLACK],
+            new THREE.Vector3(0, 1, 0),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLACK, BLACK, BLACK],
+            new THREE.Vector3(0, -1, 0),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, GREEN, BLACK, BLACK, BLACK],
+            new THREE.Vector3(0, 0, 1),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, BLACK, BLUE, BLACK, BLACK],
+            new THREE.Vector3(0, 0, -1),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, BLACK, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, 0, 0),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, BLACK, BLACK, BLACK, RED],
+            new THREE.Vector3(1, 0, 0),
+        );
+    }
+
+    private pushEdgeCubies(): void {
+        // Top edges
+        this.pushCubie(
+            [WHITE, BLACK, GREEN, BLACK, BLACK, BLACK],
+            new THREE.Vector3(0, 1, 1),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLUE, BLACK, BLACK],
+            new THREE.Vector3(0, 1, -1),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, 1, 0),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLACK, BLACK, RED],
+            new THREE.Vector3(1, 1, 0),
+        );
+        // Bottom edges
+        this.pushCubie(
+            [BLACK, YELLOW, GREEN, BLACK, BLACK, BLACK],
+            new THREE.Vector3(0, -1, 1),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLUE, BLACK, BLACK],
+            new THREE.Vector3(0, -1, -1),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, -1, 0),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLACK, BLACK, RED],
+            new THREE.Vector3(1, -1, 0),
+        );
+        // Middle edges
+        this.pushCubie(
+            [BLACK, BLACK, GREEN, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, 0, 1),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, GREEN, BLACK, BLACK, RED],
+            new THREE.Vector3(1, 0, 1),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, BLACK, BLUE, ORANGE, BLACK],
+            new THREE.Vector3(-1, 0, -1),
+        );
+        this.pushCubie(
+            [BLACK, BLACK, BLACK, BLUE, BLACK, RED],
+            new THREE.Vector3(1, 0, -1),
+        );
+    }
+
+    private pushCornerCubies(): void {
+        // Top corners
+        this.pushCubie(
+            [WHITE, BLACK, GREEN, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, 1, 1),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, GREEN, BLACK, BLACK, RED],
+            new THREE.Vector3(1, 1, 1),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLUE, ORANGE, BLACK],
+            new THREE.Vector3(-1, 1, -1),
+        );
+        this.pushCubie(
+            [WHITE, BLACK, BLACK, BLUE, BLACK, RED],
+            new THREE.Vector3(1, 1, -1),
+        );
+        // Bottom corners
+        this.pushCubie(
+            [BLACK, YELLOW, GREEN, BLACK, ORANGE, BLACK],
+            new THREE.Vector3(-1, -1, 1),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, GREEN, BLACK, BLACK, RED],
+            new THREE.Vector3(1, -1, 1),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLUE, ORANGE, BLACK],
+            new THREE.Vector3(-1, -1, -1),
+        );
+        this.pushCubie(
+            [BLACK, YELLOW, BLACK, BLUE, BLACK, RED],
+            new THREE.Vector3(1, -1, -1),
+        );
     }
 
     private addLightsToScene(): void {
@@ -79,7 +210,9 @@ export default class PuzzleCube {
         this.camera.lookAt(new THREE.Vector3(0, 0, 0));
 
         this.addLightsToScene();
-        this.cubie.addToScene(this.scene);
+        for (const cubie of this.cubies) {
+            cubie.addToScene(this.scene);
+        }
 
         const controls = new OrbitControls(this.camera, this.canvas);
         controls.target.set(0, 0, 0);
@@ -87,19 +220,7 @@ export default class PuzzleCube {
     }
 
     // This method is to update the scene
-    private update(deltaTime: number): void {
-        if (this.keyState["w"]) {
-            this.cubie.move(
-                new THREE.Vector3(1, 0, 0).multiplyScalar(deltaTime),
-            );
-        }
-        if (this.keyState["s"]) {
-            this.cubie.rotate(
-                new THREE.Euler(0, 3 * deltaTime, 0),
-                this.cubie.getPosition(),
-            );
-        }
-    }
+    private update(deltaTime: number): void {}
 
     render(): void {
         // Add event listeners to keep track of keyboard state
