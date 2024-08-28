@@ -3,7 +3,6 @@ import * as THREE from "three";
 export default class Cubie {
     private planes: THREE.Mesh[];
     private position: THREE.Vector3;
-    private rotation: THREE.Euler;
 
     // The colors should be in the order:
     //  [top, bottom, front, back, left, right]
@@ -61,11 +60,15 @@ export default class Cubie {
             rightMesh,
         ];
         this.position = new THREE.Vector3(0, 0, 0);
-        this.rotation = new THREE.Euler(0, 0, 0);
     }
 
     getPosition(): THREE.Vector3 {
         return new THREE.Vector3().copy(this.position);
+    }
+
+    setPosition(newPosition: THREE.Vector3): void {
+        this.move(new THREE.Vector3().copy(this.position).negate());
+        this.move(newPosition);
     }
 
     move(velocity: THREE.Vector3): void {
@@ -73,10 +76,6 @@ export default class Cubie {
         for (const plane of this.planes) {
             plane.position.add(velocity);
         }
-    }
-
-    getRotation(): THREE.Euler {
-        return new THREE.Euler().copy(this.rotation);
     }
 
     rotate(angle: THREE.Euler, around: THREE.Vector3): void {
@@ -94,13 +93,7 @@ export default class Cubie {
                 planeRotationMatrix.premultiply(newRotationMatrix),
             );
         }
-        const cubieRotationMatrix = new THREE.Matrix4().makeRotationFromEuler(
-            this.rotation,
-        );
         this.position.sub(around).applyMatrix4(newRotationMatrix).add(around);
-        this.rotation.setFromRotationMatrix(
-            cubieRotationMatrix.premultiply(newRotationMatrix),
-        );
     }
 
     addToScene(scene: THREE.Scene): void {
