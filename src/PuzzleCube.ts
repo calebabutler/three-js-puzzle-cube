@@ -12,13 +12,37 @@ const RED = 0xff0000;
 const ORANGE = 0xffa500;
 const BLACK = 0x111111;
 
+const ROTATION_SPEED = Math.PI; // rad/s
+
+enum MoveType {
+    NoMove,
+    Up,
+    Down,
+    Front,
+    Back,
+    Left,
+    Right,
+}
+
+enum MoveAmount {
+    Clockwise,
+    Counterclockwise,
+}
+
+interface Move {
+    type: MoveType;
+    amount: MoveAmount;
+}
+
 export default class PuzzleCube {
     private scene: THREE.Scene;
     private camera: THREE.PerspectiveCamera;
     private canvas: HTMLCanvasElement;
     private renderer: THREE.WebGLRenderer;
-    private keyState: { [key: string]: boolean };
     private cubies: Cubie[];
+    private moveQueue: Move[];
+    private currentMove: Move;
+    private currentRotation: number;
 
     constructor(canvas: HTMLCanvasElement) {
         this.canvas = canvas;
@@ -34,8 +58,13 @@ export default class PuzzleCube {
             antialias: true,
         });
         this.renderer.setSize(window.innerWidth, window.innerHeight);
-        this.keyState = {};
         this.cubies = [];
+        this.moveQueue = [];
+        this.currentMove = {
+            type: MoveType.NoMove,
+            amount: MoveAmount.Clockwise,
+        };
+        this.currentRotation = 0;
 
         this.pushCenterCubies();
         this.pushEdgeCubies();
@@ -219,22 +248,163 @@ export default class PuzzleCube {
         controls.update();
     }
 
+    private handleKeyDown(event: KeyboardEvent): void {
+        let moveAmount;
+        if (event.key === event.key.toUpperCase()) {
+            moveAmount = MoveAmount.Counterclockwise;
+        } else {
+            moveAmount = MoveAmount.Clockwise;
+        }
+
+        switch (event.key) {
+            case "u":
+            case "U":
+                this.moveQueue.push({ type: MoveType.Up, amount: moveAmount });
+                break;
+            case "d":
+            case "D":
+                this.moveQueue.push({
+                    type: MoveType.Down,
+                    amount: moveAmount,
+                });
+                break;
+            case "f":
+            case "F":
+                this.moveQueue.push({
+                    type: MoveType.Front,
+                    amount: moveAmount,
+                });
+                break;
+            case "b":
+            case "B":
+                this.moveQueue.push({
+                    type: MoveType.Back,
+                    amount: moveAmount,
+                });
+                break;
+            case "r":
+            case "R":
+                this.moveQueue.push({
+                    type: MoveType.Right,
+                    amount: moveAmount,
+                });
+                break;
+            case "l":
+            case "L":
+                this.moveQueue.push({
+                    type: MoveType.Left,
+                    amount: moveAmount,
+                });
+                break;
+        }
+    }
+
+    private processMoveQueue(deltaTime: number): void {
+        if (this.currentMove.type === MoveType.NoMove) {
+            const nextMove = this.moveQueue.shift();
+            if (nextMove === undefined) {
+                return;
+            }
+            this.currentMove = nextMove;
+            this.currentRotation = 0;
+        }
+
+        let speed = ROTATION_SPEED;
+        if (this.currentMove.amount === MoveAmount.Counterclockwise) {
+            speed *= -1;
+        }
+
+        this.currentRotation += ROTATION_SPEED * deltaTime;
+
+        if (this.currentRotation >= Math.PI / 2) {
+            speed =
+                (Math.PI / 2 -
+                    this.currentRotation +
+                    ROTATION_SPEED * deltaTime) /
+                deltaTime;
+            this.currentMove.type = MoveType.NoMove;
+        }
+
+        const THRESHOLD = 0.1;
+
+        switch (this.currentMove.type) {
+            case MoveType.Up:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().y - 1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(0, -speed * deltaTime, 0),
+                            new THREE.Vector3(0, 1, 0),
+                        );
+                    }
+                }
+                break;
+            case MoveType.Down:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().y - -1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(0, speed * deltaTime, 0),
+                            new THREE.Vector3(0, -1, 0),
+                        );
+                    }
+                }
+                break;
+            case MoveType.Front:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().z - 1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(0, 0, -speed * deltaTime),
+                            new THREE.Vector3(0, 0, 1),
+                        );
+                    }
+                }
+                break;
+            case MoveType.Back:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().z - -1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(0, 0, speed * deltaTime),
+                            new THREE.Vector3(0, 0, -1),
+                        );
+                    }
+                }
+                break;
+            case MoveType.Left:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().x - -1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(speed * deltaTime, 0, 0),
+                            new THREE.Vector3(-1, 0, 0),
+                        );
+                    }
+                }
+                break;
+            case MoveType.Right:
+                for (const cubie of this.cubies) {
+                    if (Math.abs(cubie.getPosition().x - 1) < THRESHOLD) {
+                        cubie.rotate(
+                            new THREE.Euler(-speed * deltaTime, 0, 0),
+                            new THREE.Vector3(1, 0, 0),
+                        );
+                    }
+                }
+                break;
+        }
+    }
+
     // This method is to update the scene
-    private update(deltaTime: number): void {}
+    private update(deltaTime: number): void {
+        this.processMoveQueue(deltaTime);
+    }
 
     render(): void {
-        // Add event listeners to keep track of keyboard state
+        // Add event listener to keep track of keyboard state
         this.canvas.addEventListener("keydown", (e) => {
-            this.keyState[e.key] = true;
+            this.handleKeyDown(e);
         });
-        this.canvas.addEventListener("keyup", (e) => {
-            this.keyState[e.key] = false;
-        });
-
-        let lastTime = 0;
 
         this.load();
 
+        let lastTime = 0;
         const animate: XRFrameRequestCallback = (time) => {
             const deltaTime = (time - lastTime) / 1000;
             lastTime = time;
