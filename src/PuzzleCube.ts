@@ -1,31 +1,15 @@
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(
-        75,
-        window.innerWidth / window.innerHeight,
-        0.1,
-        1000,
-    );
-
-    const controls = new OrbitControls(camera, canvas);
-    controls.target.set(0, 0, 0);
-    controls.update();
-
-    const renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        antialias: true,
-    });
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    document.body.appendChild(renderer.domElement);
-
+const addCubeToScene = (scene: THREE.Scene): THREE.Mesh => {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshLambertMaterial({ color: 0xffffff });
     const cube = new THREE.Mesh(geometry, material);
     scene.add(cube);
+    return cube;
+};
 
+const addLightsToScene = (scene: THREE.Scene): void => {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
@@ -53,6 +37,29 @@ export const renderPuzzleCube = (canvas: HTMLCanvasElement) => {
     directionalLight5.castShadow = true;
     directionalLight5.position.set(0, 0, -2);
     scene.add(directionalLight5);
+};
+
+export const renderPuzzleCube = (canvas: HTMLCanvasElement): void => {
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth / window.innerHeight,
+        0.1,
+        1000,
+    );
+
+    const controls = new OrbitControls(camera, canvas);
+    controls.target.set(0, 0, 0);
+    controls.update();
+
+    const renderer = new THREE.WebGLRenderer({
+        canvas: canvas,
+        antialias: true,
+    });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+
+    const cube = addCubeToScene(scene);
+    addLightsToScene(scene);
 
     camera.position.z = 5;
     camera.lookAt(cube.position);

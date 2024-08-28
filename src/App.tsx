@@ -2,7 +2,7 @@ import { useLayoutEffect, useRef } from "react";
 import "./App.css";
 import { renderPuzzleCube } from "./PuzzleCube";
 
-const App = () => {
+const App = (): JSX.Element => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useLayoutEffect(() => {
