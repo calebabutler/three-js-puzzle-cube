@@ -1,13 +1,14 @@
 import { useLayoutEffect, useRef } from "react";
 import "./App.css";
-import { renderPuzzleCube } from "./PuzzleCube";
+import PuzzleCube from "./PuzzleCube";
 
 const App = (): JSX.Element => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
 
     useLayoutEffect(() => {
         if (canvasRef.current !== null) {
-            renderPuzzleCube(canvasRef.current);
+            const puzzleCube = new PuzzleCube(canvasRef.current);
+            puzzleCube.render();
         }
     }, [canvasRef]);
 
