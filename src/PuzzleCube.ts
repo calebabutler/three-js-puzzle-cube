@@ -310,19 +310,18 @@ export default class PuzzleCube {
         }
 
         let speed = ROTATION_SPEED;
-        if (this.currentMove.amount === MoveAmount.Counterclockwise) {
-            speed *= -1;
-        }
 
         this.currentRotation += ROTATION_SPEED * deltaTime;
-
         if (this.currentRotation >= Math.PI / 2) {
             speed =
                 (Math.PI / 2 -
                     this.currentRotation +
                     ROTATION_SPEED * deltaTime) /
                 deltaTime;
-            this.currentMove.type = MoveType.NoMove;
+        }
+
+        if (this.currentMove.amount === MoveAmount.Counterclockwise) {
+            speed *= -1;
         }
 
         const THRESHOLD = 0.1;
@@ -388,6 +387,10 @@ export default class PuzzleCube {
                     }
                 }
                 break;
+        }
+
+        if (this.currentRotation >= Math.PI / 2) {
+            this.currentMove.type = MoveType.NoMove;
         }
     }
 
