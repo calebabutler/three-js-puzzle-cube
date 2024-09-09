@@ -12,7 +12,7 @@ const RED = 0xff0000;
 const ORANGE = 0xffa500;
 const BLACK = 0x111111;
 
-const ROTATION_SPEED = Math.PI; // rad/s
+const ROTATION_SPEED = 2 * Math.PI; // rad/s
 
 enum MoveType {
     NoMove,
@@ -256,41 +256,76 @@ export default class PuzzleCube {
             moveAmount = MoveAmount.Clockwise;
         }
 
-        switch (event.key) {
-            case "u":
-            case "U":
+        const cameraAngle = Math.atan2(
+            this.camera.position.x,
+            this.camera.position.z,
+        );
+
+        let frontKey: string,
+            backKey: string,
+            rightKey: string,
+            leftKey: string;
+
+        const UP_KEY = "u";
+        const DOWN_KEY = "d";
+
+        if (Math.abs(cameraAngle) <= Math.PI / 4) {
+            frontKey = "f";
+            backKey = "b";
+            rightKey = "r";
+            leftKey = "l";
+        } else if (
+            cameraAngle > Math.PI / 4 &&
+            cameraAngle <= (3 * Math.PI) / 4
+        ) {
+            frontKey = "l";
+            backKey = "r";
+            rightKey = "f";
+            leftKey = "b";
+        } else if (
+            cameraAngle < -Math.PI / 4 &&
+            cameraAngle > (-3 * Math.PI) / 4
+        ) {
+            frontKey = "r";
+            backKey = "l";
+            rightKey = "b";
+            leftKey = "f";
+        } else {
+            frontKey = "b";
+            backKey = "f";
+            rightKey = "l";
+            leftKey = "r";
+        }
+
+        switch (event.key.toLowerCase()) {
+            case UP_KEY:
                 this.moveQueue.push({ type: MoveType.Up, amount: moveAmount });
                 break;
-            case "d":
-            case "D":
+            case DOWN_KEY:
                 this.moveQueue.push({
                     type: MoveType.Down,
                     amount: moveAmount,
                 });
                 break;
-            case "f":
-            case "F":
+            case frontKey:
                 this.moveQueue.push({
                     type: MoveType.Front,
                     amount: moveAmount,
                 });
                 break;
-            case "b":
-            case "B":
+            case backKey:
                 this.moveQueue.push({
                     type: MoveType.Back,
                     amount: moveAmount,
                 });
                 break;
-            case "r":
-            case "R":
+            case rightKey:
                 this.moveQueue.push({
                     type: MoveType.Right,
                     amount: moveAmount,
                 });
                 break;
-            case "l":
-            case "L":
+            case leftKey:
                 this.moveQueue.push({
                     type: MoveType.Left,
                     amount: moveAmount,
