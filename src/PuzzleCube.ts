@@ -27,6 +27,9 @@ enum MoveType {
     Middle,
     Equator,
     Side,
+    XRotation,
+    YRotation,
+    ZRotation,
 }
 
 enum MoveAmount {
@@ -281,11 +284,14 @@ export default class PuzzleCube {
             rightKey: string,
             leftKey: string,
             middleKey: string,
-            sideKey: string;
+            sideKey: string,
+            xRotationKey: string,
+            zRotationKey: string;
 
         const UP_KEY = "u";
         const DOWN_KEY = "d";
         const EQUATOR_KEY = "e";
+        const Y_ROTATION_KEY = "y";
 
         if (Math.abs(cameraAngle) <= Math.PI / 4) {
             frontKey = "f";
@@ -294,6 +300,8 @@ export default class PuzzleCube {
             leftKey = "l";
             middleKey = "m";
             sideKey = "s";
+            xRotationKey = "x";
+            zRotationKey = "z";
         } else if (
             cameraAngle > Math.PI / 4 &&
             cameraAngle <= (3 * Math.PI) / 4
@@ -304,8 +312,13 @@ export default class PuzzleCube {
             leftKey = "b";
             middleKey = "s";
             sideKey = "m";
+            xRotationKey = "z";
+            zRotationKey = "x";
             // Fix S clockwise and counterclockwise
-            if (event.key.toLowerCase() === "s") {
+            if (
+                event.key.toLowerCase() === "s" ||
+                event.key.toLowerCase() === "x"
+            ) {
                 if (moveAmount === MoveAmount.Clockwise) {
                     moveAmount = MoveAmount.Counterclockwise;
                 } else if (moveAmount === MoveAmount.Counterclockwise) {
@@ -322,8 +335,13 @@ export default class PuzzleCube {
             leftKey = "f";
             middleKey = "s";
             sideKey = "m";
+            xRotationKey = "z";
+            zRotationKey = "x";
             // Fix M clockwise and counterclockwise
-            if (event.key.toLowerCase() === "m") {
+            if (
+                event.key.toLowerCase() === "m" ||
+                event.key.toLowerCase() === "z"
+            ) {
                 if (moveAmount === MoveAmount.Clockwise) {
                     moveAmount = MoveAmount.Counterclockwise;
                 } else if (moveAmount === MoveAmount.Counterclockwise) {
@@ -337,10 +355,14 @@ export default class PuzzleCube {
             leftKey = "r";
             middleKey = "m";
             sideKey = "s";
+            xRotationKey = "x";
+            zRotationKey = "z";
             // Fix M and S clockwise and counterclockwise
             if (
                 event.key.toLowerCase() === "m" ||
-                event.key.toLowerCase() === "s"
+                event.key.toLowerCase() === "s" ||
+                event.key.toLowerCase() === "x" ||
+                event.key.toLowerCase() === "z"
             ) {
                 if (moveAmount === MoveAmount.Clockwise) {
                     moveAmount = MoveAmount.Counterclockwise;
@@ -363,6 +385,12 @@ export default class PuzzleCube {
             case EQUATOR_KEY:
                 this.moveQueue.push({
                     type: MoveType.Equator,
+                    amount: moveAmount,
+                });
+                break;
+            case Y_ROTATION_KEY:
+                this.moveQueue.push({
+                    type: MoveType.YRotation,
                     amount: moveAmount,
                 });
                 break;
@@ -399,6 +427,18 @@ export default class PuzzleCube {
             case sideKey:
                 this.moveQueue.push({
                     type: MoveType.Side,
+                    amount: moveAmount,
+                });
+                break;
+            case xRotationKey:
+                this.moveQueue.push({
+                    type: MoveType.XRotation,
+                    amount: moveAmount,
+                });
+                break;
+            case zRotationKey:
+                this.moveQueue.push({
+                    type: MoveType.ZRotation,
                     amount: moveAmount,
                 });
                 break;
@@ -543,6 +583,30 @@ export default class PuzzleCube {
                             new THREE.Vector3(0, 0, 0),
                         );
                     }
+                }
+                break;
+            case MoveType.XRotation:
+                for (const cubie of this.cubies) {
+                    cubie.rotate(
+                        new THREE.Euler(-speed * deltaTime, 0, 0),
+                        new THREE.Vector3(0, 0, 0),
+                    );
+                }
+                break;
+            case MoveType.YRotation:
+                for (const cubie of this.cubies) {
+                    cubie.rotate(
+                        new THREE.Euler(0, -speed * deltaTime, 0),
+                        new THREE.Vector3(0, 0, 0),
+                    );
+                }
+                break;
+            case MoveType.ZRotation:
+                for (const cubie of this.cubies) {
+                    cubie.rotate(
+                        new THREE.Euler(0, 0, -speed * deltaTime),
+                        new THREE.Vector3(0, 0, 0),
+                    );
                 }
                 break;
         }
