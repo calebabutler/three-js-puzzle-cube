@@ -12,6 +12,8 @@ const RED = 0xff0000;
 const ORANGE = 0xffa500;
 const BLACK = 0x111111;
 
+const LINE_COLOR = 0xffffff;
+
 const ROTATION_SPEED = 2 * Math.PI; // rad/s
 
 enum MoveType {
@@ -40,6 +42,7 @@ export default class PuzzleCube {
     private canvas: HTMLCanvasElement;
     private renderer: THREE.WebGLRenderer;
     private cubies: Cubie[];
+    private cameraLine: THREE.Line;
     private moveQueue: Move[];
     private currentMove: Move;
     private currentRotation: number;
@@ -69,6 +72,15 @@ export default class PuzzleCube {
         this.pushCenterCubies();
         this.pushEdgeCubies();
         this.pushCornerCubies();
+
+        this.cameraLine = new THREE.Line(
+            new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, -1000),
+                new THREE.Vector3(0, 0, 1000),
+            ]),
+            new THREE.LineBasicMaterial({ color: LINE_COLOR }),
+        );
+        this.scene.add(this.cameraLine);
     }
 
     private pushCubie(
@@ -334,6 +346,28 @@ export default class PuzzleCube {
         }
     }
 
+    private updateCameraLine(): void {
+        const cameraAngle = Math.atan2(
+            this.camera.position.x,
+            this.camera.position.z,
+        );
+
+        if (
+            Math.abs(cameraAngle) > Math.PI / 4 &&
+            Math.abs(cameraAngle) <= (3 * Math.PI) / 4
+        ) {
+            this.cameraLine.setRotationFromAxisAngle(
+                new THREE.Vector3(0, 1, 0),
+                Math.PI / 2,
+            );
+        } else {
+            this.cameraLine.setRotationFromAxisAngle(
+                new THREE.Vector3(0, 1, 0),
+                0,
+            );
+        }
+    }
+
     private processMoveQueue(deltaTime: number): void {
         if (this.currentMove.type === MoveType.NoMove) {
             const nextMove = this.moveQueue.shift();
@@ -431,6 +465,7 @@ export default class PuzzleCube {
 
     // This method is to update the scene
     private update(deltaTime: number): void {
+        this.updateCameraLine();
         this.processMoveQueue(deltaTime);
     }
 
