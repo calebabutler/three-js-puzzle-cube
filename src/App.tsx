@@ -1,18 +1,7 @@
-import { useLayoutEffect, useRef } from "react";
-import "./App.css";
-import PuzzleCube from "./PuzzleCube";
+import PuzzleCubeGame from "./components/PuzzleCubeGame/PuzzleCubeGame";
 
 const App = (): JSX.Element => {
-    const canvasRef = useRef<HTMLCanvasElement>(null);
-
-    useLayoutEffect(() => {
-        if (canvasRef.current !== null) {
-            const puzzleCube = new PuzzleCube(canvasRef.current);
-            puzzleCube.render();
-        }
-    }, [canvasRef]);
-
-    return <canvas tabIndex={0} ref={canvasRef} />;
+    return <PuzzleCubeGame />;
 };
 
 export default App;
