@@ -149,25 +149,12 @@ const getFirstAllowedMove = (
     availableMoves: string[][][],
     previousMoves: string[],
 ): string => {
-    let secondPreviousMoveClassNumber: number,
-        previousMoveClassNumber: number,
-        previousMoveTypeNumber: number;
+    let previousMoveClassNumber: number, previousMoveTypeNumber: number;
 
     if (previousMoves.length < 1) {
-        secondPreviousMoveClassNumber = -1;
         previousMoveClassNumber = -1;
         previousMoveTypeNumber = -1;
-    } else if (previousMoves.length < 2) {
-        secondPreviousMoveClassNumber = -1;
-        [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
-            previousMoves[previousMoves.length - 1],
-            availableMoves,
-        );
     } else {
-        [secondPreviousMoveClassNumber] = findMove(
-            previousMoves[previousMoves.length - 2],
-            availableMoves,
-        );
         [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
             previousMoves[previousMoves.length - 1],
             availableMoves,
