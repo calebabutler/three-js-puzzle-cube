@@ -59,6 +59,166 @@ const randomizeCornerOrientations = (corners: Corners): void => {
     }
 };
 
+const findMove = (
+    move: string,
+    availableMoves: string[][][],
+): [number, number, number] => {
+    for (let i = 0; i < availableMoves.length; i++) {
+        for (let j = 0; j < availableMoves[i].length; j++) {
+            for (let k = 0; k < availableMoves[i][j].length; k++) {
+                if (move === availableMoves[i][j][k]) {
+                    return [i, j, k];
+                }
+            }
+        }
+    }
+    throw new Error(`${move} not an available move!`);
+};
+
+const iterateMove = (
+    move: string,
+    availableMoves: string[][][],
+    previousMoves: string[],
+): string => {
+    const [moveClassNumber, moveTypeNumber, moveNumber] = findMove(
+        move,
+        availableMoves,
+    );
+
+    let secondPreviousMoveClassNumber: number,
+        previousMoveClassNumber: number,
+        previousMoveTypeNumber: number;
+
+    if (previousMoves.length < 1) {
+        secondPreviousMoveClassNumber = -1;
+        previousMoveClassNumber = -1;
+        previousMoveTypeNumber = -1;
+    } else if (previousMoves.length < 2) {
+        secondPreviousMoveClassNumber = -1;
+        [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
+            previousMoves[previousMoves.length - 1],
+            availableMoves,
+        );
+    } else {
+        [secondPreviousMoveClassNumber] = findMove(
+            previousMoves[previousMoves.length - 2],
+            availableMoves,
+        );
+        [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
+            previousMoves[previousMoves.length - 1],
+            availableMoves,
+        );
+    }
+
+    if (
+        moveNumber + 1 <
+        availableMoves[moveClassNumber][moveTypeNumber].length
+    ) {
+        return availableMoves[moveClassNumber][moveTypeNumber][moveNumber + 1];
+    }
+
+    for (
+        let i = moveTypeNumber + 1;
+        i < availableMoves[moveClassNumber].length;
+        i++
+    ) {
+        if (
+            moveClassNumber !== previousMoveClassNumber ||
+            i !== previousMoveTypeNumber
+        ) {
+            return availableMoves[moveClassNumber][i][0];
+        }
+    }
+
+    for (let i = moveClassNumber + 1; i < availableMoves.length; i++) {
+        if (i !== previousMoveClassNumber) {
+            return availableMoves[i][0][0];
+        }
+        if (
+            previousMoveClassNumber !== secondPreviousMoveClassNumber &&
+            previousMoveTypeNumber + 1 < availableMoves[i].length
+        ) {
+            return availableMoves[i][previousMoveTypeNumber + 1][0];
+        }
+    }
+
+    return "done";
+};
+
+const getFirstAllowedMove = (
+    availableMoves: string[][][],
+    previousMoves: string[],
+): string => {
+    let secondPreviousMoveClassNumber: number,
+        previousMoveClassNumber: number,
+        previousMoveTypeNumber: number;
+
+    if (previousMoves.length < 1) {
+        secondPreviousMoveClassNumber = -1;
+        previousMoveClassNumber = -1;
+        previousMoveTypeNumber = -1;
+    } else if (previousMoves.length < 2) {
+        secondPreviousMoveClassNumber = -1;
+        [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
+            previousMoves[previousMoves.length - 1],
+            availableMoves,
+        );
+    } else {
+        [secondPreviousMoveClassNumber] = findMove(
+            previousMoves[previousMoves.length - 2],
+            availableMoves,
+        );
+        [previousMoveClassNumber, previousMoveTypeNumber] = findMove(
+            previousMoves[previousMoves.length - 1],
+            availableMoves,
+        );
+    }
+
+    if (previousMoveClassNumber === 0 && previousMoveTypeNumber === 1) {
+        return availableMoves[1][0][0];
+    }
+    if (previousMoveClassNumber === 0 && previousMoveTypeNumber === 0) {
+        return availableMoves[0][1][0];
+    }
+    return availableMoves[0][0][0];
+};
+
+const iterateAlgorithm = (
+    algorithm: string[],
+    availableMoves: string[][][],
+): void => {
+    let doExpandAlgorithm = true;
+
+    for (let i = algorithm.length - 1; i >= 0; i--) {
+        const nextMove = iterateMove(
+            algorithm[i],
+            availableMoves,
+            algorithm.slice(0, i),
+        );
+        if (nextMove !== "done") {
+            algorithm[i] = nextMove;
+            for (let j = i + 1; j < algorithm.length; j++) {
+                algorithm[j] = getFirstAllowedMove(
+                    availableMoves,
+                    algorithm.slice(0, j),
+                );
+            }
+            doExpandAlgorithm = false;
+            break;
+        }
+    }
+
+    if (doExpandAlgorithm) {
+        for (let i = 0; i < algorithm.length; i++) {
+            algorithm[i] = getFirstAllowedMove(
+                availableMoves,
+                algorithm.slice(0, i),
+            );
+        }
+        algorithm.push(getFirstAllowedMove(availableMoves, algorithm));
+    }
+};
+
 export class MinimalPuzzleCube {
     private edges: Edges;
     private corners: Corners;
@@ -660,4 +820,16 @@ export class MinimalPuzzleCube {
             ],
         );
     }
+
+    // private bruteForceSolve(availableMoves: string[][][]): string[] {
+
+    // }
+
+    // solve(): string[] {
+    //     return this.bruteForceSolve([
+    //         [["U", "U'", "U2"], ["D", "D'", "D2"]],
+    //         [["R", "R'", "R2"], ["L", "L'", "L2"]],
+    //         [["F", "F'", "F2"], ["B", "B'", "B2"]],
+    //     ]);
+    // }
 }
