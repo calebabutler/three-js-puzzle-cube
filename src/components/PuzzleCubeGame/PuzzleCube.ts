@@ -35,6 +35,14 @@ enum MoveType {
 enum MoveAmount {
     Clockwise,
     Counterclockwise,
+    Halfwise,
+}
+
+enum CameraDirection {
+    Front,
+    Right,
+    Back,
+    Left,
 }
 
 interface Move {
@@ -266,12 +274,35 @@ export default class PuzzleCube {
         controls.update();
     }
 
-    private handleKeyDown(event: KeyboardEvent): void {
-        let moveAmount;
-        if (event.key === event.key.toUpperCase()) {
-            moveAmount = MoveAmount.Counterclockwise;
-        } else {
+    private applyMove(move: string): void {
+        const reverseMoveAmount = (moveAmount: MoveAmount): MoveAmount => {
+            if (moveAmount === MoveAmount.Clockwise) {
+                return MoveAmount.Counterclockwise;
+            }
+            if (moveAmount === MoveAmount.Counterclockwise) {
+                return MoveAmount.Clockwise;
+            }
+            return moveAmount;
+        };
+
+        const moveError = (move: string): Error => {
+            return new Error(`${move} is not a valid move`);
+        };
+
+        let moveAmount: MoveAmount;
+
+        if (move.length > 1) {
+            if (move[1] === "'") {
+                moveAmount = MoveAmount.Counterclockwise;
+            } else if (move[1] === "2") {
+                moveAmount = MoveAmount.Halfwise;
+            } else {
+                throw moveError(move);
+            }
+        } else if (move.length === 1) {
             moveAmount = MoveAmount.Clockwise;
+        } else {
+            throw moveError(move);
         }
 
         const cameraAngle = Math.atan2(
@@ -279,168 +310,329 @@ export default class PuzzleCube {
             this.camera.position.z,
         );
 
-        let frontKey: string,
-            backKey: string,
-            rightKey: string,
-            leftKey: string,
-            middleKey: string,
-            sideKey: string,
-            xRotationKey: string,
-            zRotationKey: string;
-
-        const UP_KEY = "u";
-        const DOWN_KEY = "d";
-        const EQUATOR_KEY = "e";
-        const Y_ROTATION_KEY = "y";
+        let cameraDirection: CameraDirection;
 
         if (Math.abs(cameraAngle) <= Math.PI / 4) {
-            frontKey = "f";
-            backKey = "b";
-            rightKey = "r";
-            leftKey = "l";
-            middleKey = "m";
-            sideKey = "s";
-            xRotationKey = "x";
-            zRotationKey = "z";
+            cameraDirection = CameraDirection.Front;
         } else if (
             cameraAngle > Math.PI / 4 &&
             cameraAngle <= (3 * Math.PI) / 4
         ) {
-            frontKey = "l";
-            backKey = "r";
-            rightKey = "f";
-            leftKey = "b";
-            middleKey = "s";
-            sideKey = "m";
-            xRotationKey = "z";
-            zRotationKey = "x";
-            // Fix S clockwise and counterclockwise
-            if (
-                event.key.toLowerCase() === "s" ||
-                event.key.toLowerCase() === "x"
-            ) {
-                if (moveAmount === MoveAmount.Clockwise) {
-                    moveAmount = MoveAmount.Counterclockwise;
-                } else if (moveAmount === MoveAmount.Counterclockwise) {
-                    moveAmount = MoveAmount.Clockwise;
-                }
-            }
+            cameraDirection = CameraDirection.Right;
         } else if (
             cameraAngle <= -Math.PI / 4 &&
             cameraAngle > (-3 * Math.PI) / 4
         ) {
-            frontKey = "r";
-            backKey = "l";
-            rightKey = "b";
-            leftKey = "f";
-            middleKey = "s";
-            sideKey = "m";
-            xRotationKey = "z";
-            zRotationKey = "x";
-            // Fix M clockwise and counterclockwise
-            if (
-                event.key.toLowerCase() === "m" ||
-                event.key.toLowerCase() === "z"
-            ) {
-                if (moveAmount === MoveAmount.Clockwise) {
-                    moveAmount = MoveAmount.Counterclockwise;
-                } else if (moveAmount === MoveAmount.Counterclockwise) {
-                    moveAmount = MoveAmount.Clockwise;
-                }
-            }
+            cameraDirection = CameraDirection.Left;
         } else {
-            frontKey = "b";
-            backKey = "f";
-            rightKey = "l";
-            leftKey = "r";
-            middleKey = "m";
-            sideKey = "s";
-            xRotationKey = "x";
-            zRotationKey = "z";
-            // Fix M and S clockwise and counterclockwise
-            if (
-                event.key.toLowerCase() === "m" ||
-                event.key.toLowerCase() === "s" ||
-                event.key.toLowerCase() === "x" ||
-                event.key.toLowerCase() === "z"
-            ) {
-                if (moveAmount === MoveAmount.Clockwise) {
-                    moveAmount = MoveAmount.Counterclockwise;
-                } else if (moveAmount === MoveAmount.Counterclockwise) {
-                    moveAmount = MoveAmount.Clockwise;
-                }
-            }
+            cameraDirection = CameraDirection.Back;
         }
 
-        switch (event.key.toLowerCase()) {
-            case UP_KEY:
+        switch (move[0]) {
+            case "U":
                 this.moveQueue.push({ type: MoveType.Up, amount: moveAmount });
                 break;
-            case DOWN_KEY:
+            case "D":
                 this.moveQueue.push({
                     type: MoveType.Down,
                     amount: moveAmount,
                 });
                 break;
-            case EQUATOR_KEY:
+            case "E":
                 this.moveQueue.push({
                     type: MoveType.Equator,
                     amount: moveAmount,
                 });
                 break;
-            case Y_ROTATION_KEY:
+            case "y":
                 this.moveQueue.push({
                     type: MoveType.YRotation,
                     amount: moveAmount,
                 });
                 break;
-            case frontKey:
-                this.moveQueue.push({
-                    type: MoveType.Front,
-                    amount: moveAmount,
-                });
+            case "R":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Right,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Back,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Left,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Front,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
                 break;
-            case backKey:
-                this.moveQueue.push({
-                    type: MoveType.Back,
-                    amount: moveAmount,
-                });
+            case "L":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Left,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Front,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Right,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Back,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
                 break;
-            case rightKey:
-                this.moveQueue.push({
-                    type: MoveType.Right,
-                    amount: moveAmount,
-                });
+            case "F":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Front,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Right,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Back,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Left,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
                 break;
-            case leftKey:
-                this.moveQueue.push({
-                    type: MoveType.Left,
-                    amount: moveAmount,
-                });
+            case "B":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Back,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Left,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Front,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Right,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
                 break;
-            case middleKey:
-                this.moveQueue.push({
-                    type: MoveType.Middle,
-                    amount: moveAmount,
-                });
+            case "x":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.XRotation,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.ZRotation,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.XRotation,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.ZRotation,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
                 break;
-            case sideKey:
-                this.moveQueue.push({
-                    type: MoveType.Side,
-                    amount: moveAmount,
-                });
+            case "z":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.ZRotation,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.XRotation,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.ZRotation,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.XRotation,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                }
                 break;
-            case xRotationKey:
-                this.moveQueue.push({
-                    type: MoveType.XRotation,
-                    amount: moveAmount,
-                });
+            case "M":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Middle,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Side,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Middle,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Side,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                }
                 break;
-            case zRotationKey:
-                this.moveQueue.push({
-                    type: MoveType.ZRotation,
-                    amount: moveAmount,
-                });
+            case "S":
+                switch (cameraDirection) {
+                    case CameraDirection.Front:
+                        this.moveQueue.push({
+                            type: MoveType.Side,
+                            amount: moveAmount,
+                        });
+                        break;
+                    case CameraDirection.Right:
+                        this.moveQueue.push({
+                            type: MoveType.Middle,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Back:
+                        this.moveQueue.push({
+                            type: MoveType.Side,
+                            amount: reverseMoveAmount(moveAmount),
+                        });
+                        break;
+                    case CameraDirection.Left:
+                        this.moveQueue.push({
+                            type: MoveType.Middle,
+                            amount: moveAmount,
+                        });
+                        break;
+                }
+                break;
+            default:
+                throw moveError(move);
+        }
+    }
+
+    private applyAlgorithm(algorithm: string[]): void {
+        for (const move of algorithm) {
+            this.applyMove(move);
+        }
+    }
+
+    private handleKeyDown(event: KeyboardEvent): void {
+        let moveAmount: string;
+        if (event.key === event.key.toUpperCase()) {
+            moveAmount = "'";
+        } else {
+            moveAmount = "";
+        }
+        switch (event.key.toLowerCase()) {
+            case "u":
+                this.applyMove("U" + moveAmount);
+                break;
+            case "d":
+                this.applyMove("D" + moveAmount);
+                break;
+            case "r":
+                this.applyMove("R" + moveAmount);
+                break;
+            case "l":
+                this.applyMove("L" + moveAmount);
+                break;
+            case "f":
+                this.applyMove("F" + moveAmount);
+                break;
+            case "b":
+                this.applyMove("B" + moveAmount);
+                break;
+            case "m":
+                this.applyMove("M" + moveAmount);
+                break;
+            case "e":
+                this.applyMove("E" + moveAmount);
+                break;
+            case "s":
+                this.applyMove("S" + moveAmount);
+                break;
+            case "x":
+                this.applyMove("x" + moveAmount);
+                break;
+            case "y":
+                this.applyMove("y" + moveAmount);
+                break;
+            case "z":
+                this.applyMove("z" + moveAmount);
+                break;
+            case "t":
+                this.applyAlgorithm(
+                    "R U R' U' R' F R2 U' R' U' R U R' F'".split(" "),
+                );
                 break;
         }
     }
@@ -477,12 +669,19 @@ export default class PuzzleCube {
             this.currentRotation = 0;
         }
 
+        let completeRotation;
+        if (this.currentMove.amount === MoveAmount.Halfwise) {
+            completeRotation = Math.PI;
+        } else {
+            completeRotation = Math.PI / 2;
+        }
+
         let speed = ROTATION_SPEED;
 
         this.currentRotation += ROTATION_SPEED * deltaTime;
-        if (this.currentRotation >= Math.PI / 2) {
+        if (this.currentRotation >= completeRotation) {
             speed =
-                (Math.PI / 2 -
+                (completeRotation -
                     this.currentRotation +
                     ROTATION_SPEED * deltaTime) /
                 deltaTime;
@@ -611,7 +810,7 @@ export default class PuzzleCube {
                 break;
         }
 
-        if (this.currentRotation >= Math.PI / 2) {
+        if (this.currentRotation >= completeRotation) {
             this.currentMove.type = MoveType.NoMove;
         }
     }
