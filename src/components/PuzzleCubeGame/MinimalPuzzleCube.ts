@@ -808,15 +808,126 @@ export class MinimalPuzzleCube {
         );
     }
 
-    // private bruteForceSolve(availableMoves: string[][][]): string[] {
+    private bruteForceSolve(
+        availableMoves: string[][][],
+        isSolved: (cube: MinimalPuzzleCube) => boolean,
+    ): string[] {
+        const MAX_SOLUTION_LENGTH = 20;
+        const algorithm: string[] = [];
+        while (algorithm.length <= MAX_SOLUTION_LENGTH) {
+            const cube = this.copy();
+            cube.executeAlgorithm(algorithm);
+            if (isSolved(cube)) {
+                return algorithm;
+            }
+            iterateAlgorithm(algorithm, availableMoves);
+        }
+        throw new Error(`Solution is longer than ${MAX_SOLUTION_LENGTH} moves`);
+    }
 
-    // }
+    private thistlethwaiteSolve(): string[] {
+        const g0ToG1 = this.bruteForceSolve(
+            [
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [
+                    ["R", "R'", "R2"],
+                    ["L", "L'", "L2"],
+                ],
+                [
+                    ["F", "F'", "F2"],
+                    ["B", "B'", "B2"],
+                ],
+            ],
+            (cube: MinimalPuzzleCube): boolean => {
+                for (const edge of cube.edges) {
+                    if (edge.orientation !== 0) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+        );
+        const g1Cube = this.copy();
+        g1Cube.executeAlgorithm(g0ToG1);
 
-    // solve(): string[] {
-    //     return this.bruteForceSolve([
-    //         [["U", "U'", "U2"], ["D", "D'", "D2"]],
-    //         [["R", "R'", "R2"], ["L", "L'", "L2"]],
-    //         [["F", "F'", "F2"], ["B", "B'", "B2"]],
-    //     ]);
-    // }
+        const g1ToG2 = g1Cube.bruteForceSolve(
+            [
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [
+                    ["R", "R'", "R2"],
+                    ["L", "L'", "L2"],
+                ],
+                [["F2"], ["B2"]],
+            ],
+            (cube: MinimalPuzzleCube): boolean => {
+                for (const corner of cube.corners) {
+                    if (corner.orientation !== 0) {
+                        return false;
+                    }
+                }
+                for (let i = 4; i < 8; i++) {
+                    if (cube.edges[i].id < 4 || cube.edges[i].id >= 8) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+        );
+        const g2Cube = g1Cube.copy();
+        g2Cube.executeAlgorithm(g1ToG2);
+
+        const g2ToG3 = g2Cube.bruteForceSolve(
+            [
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [["R2"], ["L2"]],
+                [["F2"], ["B2"]],
+            ],
+            (cube: MinimalPuzzleCube): boolean => {
+                for (let i = 0; i < 4; i++) {
+                    if (cube.edges[i].id % 2 !== i % 2) {
+                        return false;
+                    }
+                }
+                for (let i = 8; i < 12; i++) {
+                    if (cube.edges[i].id % 2 !== i % 2) {
+                        return false;
+                    }
+                }
+                for (let i = 0; i < 8; i++) {
+                    if (cube.corners[i].id % 2 !== i % 2) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+        );
+        const g3Cube = g2Cube.copy();
+        g3Cube.executeAlgorithm(g2ToG3);
+
+        const solvedCube = MinimalPuzzleCube.getSolvedCube();
+
+        const g3ToG4 = g3Cube.bruteForceSolve(
+            [
+                [["U2"], ["D2"]],
+                [["R2"], ["L2"]],
+                [["F2"], ["B2"]],
+            ],
+            (cube: MinimalPuzzleCube): boolean => cube.equals(solvedCube),
+        );
+
+        return g0ToG1.concat(g1ToG2).concat(g2ToG3).concat(g3ToG4);
+    }
+
+    solve(): string[] {
+        return this.thistlethwaiteSolve();
+    }
 }
