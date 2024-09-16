@@ -585,6 +585,72 @@ export default class PuzzleCube {
         }
     }
 
+    private generateSimpleScramble(): string[] {
+        const MOVES = [
+            [
+                ["U", "U'", "U2"],
+                ["D", "D'", "D2"],
+            ],
+            [
+                ["R", "R'", "R2"],
+                ["L", "L'", "L2"],
+            ],
+            [
+                ["F", "F'", "F2"],
+                ["B", "B'", "B2"],
+            ],
+        ];
+        const SCRAMBLE_LENGTH = 30;
+
+        const scramble: string[] = [];
+
+        let previousMoveType: number = -1;
+        let previousMoveClass: number = -1;
+        let secondPreviousMoveClass: number = -1;
+
+        for (let i = 0; i < SCRAMBLE_LENGTH; i++) {
+            let randomMoveClass: number,
+                randomMoveType: number,
+                randomMove: number;
+
+            if (
+                previousMoveClass >= 0 &&
+                (previousMoveClass === secondPreviousMoveClass ||
+                    previousMoveType === MOVES[previousMoveClass].length - 1)
+            ) {
+                const randMax = MOVES.length - 1;
+                const rand = Math.floor(Math.random() * randMax);
+                randomMoveClass = (previousMoveClass + 1 + rand) % MOVES.length;
+            } else {
+                const randMax = MOVES.length;
+                const rand = Math.floor(Math.random() * randMax);
+                randomMoveClass = rand;
+            }
+
+            if (previousMoveClass === randomMoveClass) {
+                const randMax =
+                    MOVES[randomMoveClass].length - previousMoveType - 1;
+                const rand = Math.floor(Math.random() * randMax);
+                randomMoveType = previousMoveType + 1 + rand;
+            } else {
+                const randMax = MOVES[randomMoveClass].length;
+                const rand = Math.floor(Math.random() * randMax);
+                randomMoveType = rand;
+            }
+
+            randomMove = Math.floor(
+                Math.random() * MOVES[randomMoveClass][randomMoveType].length,
+            );
+
+            secondPreviousMoveClass = previousMoveClass;
+            previousMoveClass = randomMoveClass;
+            previousMoveType = randomMoveType;
+            scramble.push(MOVES[randomMoveClass][randomMoveType][randomMove]);
+        }
+
+        return scramble;
+    }
+
     private handleKeyDown(event: KeyboardEvent): void {
         let moveAmount: string;
         if (event.key === event.key.toUpperCase()) {
@@ -633,6 +699,9 @@ export default class PuzzleCube {
                 this.applyAlgorithm(
                     "R U R' U' R' F R2 U' R' U' R U R' F'".split(" "),
                 );
+                break;
+            case " ":
+                this.applyAlgorithm(this.generateSimpleScramble());
                 break;
         }
     }
