@@ -1,3 +1,11 @@
+/* This code is experimental code for an eventual solver to be implemented
+ * into this application. Right now, this solver is too slow to be useful, but
+ * after some optimizations (such that it would be able to solve a cube in
+ * under a minute) I would like to add it to the greater program, either as a
+ * button the user could press (solve cube from this state!) or to implement a
+ * more advanced scrambler, like the one the WCA uses.
+ */
+
 interface Edge {
     id: 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11;
     orientation: number;
