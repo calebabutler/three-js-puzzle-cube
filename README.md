@@ -7,7 +7,7 @@ Future goals for this project:
 -   Add configurable keys, so that the user could assign any moves or
     combinations of moves (algorithms) to any key press
 
--   Add ability for cubies to align themselves to the x, y, z, grid, to prevent
+-   Add ability for cubies to align themselves to the x, y, z grid to prevent
     floating point error rendering issues after using the program for a long
     time
 
@@ -31,7 +31,7 @@ Future goals for this project:
 
 -   Add ability to change move animation function (linear, bezier, etc.)
 
--   Add ability for custom textures
+-   Add ability for custom color schemes
 
 -   Add ability to save configurations to local storage
 
