@@ -581,6 +581,149 @@ export class MinimalPuzzleCube {
         throw new Error(`Solution is longer than ${MAX_SOLUTION_LENGTH} moves`);
     }
 
+    private heuristic(): number {
+        let distance = 0;
+        // for (let i = 0; i < 12; i++) {
+        //     distance += this.bruteForceSolve([
+        //         [
+        //             ["U", "U'", "U2"],
+        //             ["D", "D'", "D2"],
+        //         ],
+        //         [
+        //             ["R", "R'", "R2"],
+        //             ["L", "L'", "L2"],
+        //         ],
+        //         [
+        //             ["F", "F'", "F2"],
+        //             ["B", "B'", "B2"],
+        //         ],
+        //     ],
+        //     (cube: MinimalPuzzleCube): boolean => cube.edges[i].id === i && cube.edges[i].orientation === 0
+        //     ).length;
+        // }
+        for (let i = 0; i < 8; i++) {
+            distance += this.bruteForceSolve([
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [
+                    ["R", "R'", "R2"],
+                    ["L", "L'", "L2"],
+                ],
+                [
+                    ["F", "F'", "F2"],
+                    ["B", "B'", "B2"],
+                ],
+            ],
+            (cube: MinimalPuzzleCube): boolean => cube.corners[i].id === i && cube.corners[i].orientation === 0
+            ).length;
+        }
+        return distance / 4;
+    }
+
+    private getNextNodes(algorithm: string[]): string[][] {
+        const AVAILABLE_MOVES = [
+            [["U", "U'", "U2"], ["D", "D'", "D2"]],
+            [["R", "R'", "R2"], ["L", "L'", "L2"]],
+            [["F", "F'", "F2"], ["B", "B'", "B2"]],
+        ];
+        const algorithms: string[][] = [];
+        if (algorithm.length === 0) {
+            for (let i = 0; i < AVAILABLE_MOVES.length; i++) {
+                for (let j = 0; j < AVAILABLE_MOVES[i].length; j++) {
+                    for (let k = 0; k < AVAILABLE_MOVES[i][j].length; k++) {
+                        algorithms.push(algorithm.concat([AVAILABLE_MOVES[i][j][k]]));
+                    }
+                }
+            }
+        } else if (algorithm.length === 1) {
+            const [previousMoveClass, previousMoveType] = findMove(algorithm[algorithm.length - 1], AVAILABLE_MOVES);
+            for (let i = 0; i < AVAILABLE_MOVES.length; i++) {
+                for (let j = 0; j < AVAILABLE_MOVES[i].length; j++) {
+                    if (previousMoveClass === i && previousMoveType >= j) {
+                        continue;
+                    }
+                    for (let k = 0; k < AVAILABLE_MOVES[i][j].length; k++) {
+                        algorithms.push(algorithm.concat([AVAILABLE_MOVES[i][j][k]]));
+                    }
+                }
+            }
+        } else {
+            const [secondPreviousMoveClass] = findMove(algorithm[algorithm.length - 2], AVAILABLE_MOVES);
+            const [previousMoveClass, previousMoveType] = findMove(algorithm[algorithm.length - 1], AVAILABLE_MOVES);
+            for (let i = 0; i < AVAILABLE_MOVES.length; i++) {
+                if (previousMoveClass === i && previousMoveClass === secondPreviousMoveClass) {
+                    continue;
+                }
+                for (let j = 0; j < AVAILABLE_MOVES[i].length; j++) {
+                    if (previousMoveClass === i && previousMoveType >= j) {
+                        continue;
+                    }
+                    for (let k = 0; k < AVAILABLE_MOVES[i][j].length; k++) {
+                        algorithms.push(algorithm.concat([AVAILABLE_MOVES[i][j][k]]));
+                    }
+                }
+            }
+        }
+        return algorithms;
+    }
+
+    private areCornersSolved(): boolean {
+        for (let i = 0; i < 8; i++) {
+            if (this.corners[i].id !== i || this.corners[i].orientation !== 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Here I am trying out the IDA* algorithm
+    solveWithHeuristic(): string[] {
+        const solvedCube = MinimalPuzzleCube.getSolvedCube();
+        const search = (path: string[], depth: number, bound: number) => {
+            const node: string[] = JSON.parse(path[path.length - 1]);
+
+            const cube = this.copy();
+            cube.executeAlgorithm(node);
+            const f: number = depth + cube.heuristic();
+            if (f > bound) {
+                return f;
+            }
+            if (cube.areCornersSolved()) {
+                return "found";
+            }
+            let min: number = Infinity;
+            for (const successor of this.getNextNodes(node)) {
+                if (path.indexOf(JSON.stringify(successor)) < 0) {
+                    path.push(JSON.stringify(successor));
+                    const t = search(path, depth + 1, bound);
+                    if (t === "found") {
+                        return "found";
+                    }
+                    if (typeof t === "number" && t < min) {
+                        min = t;
+                    }
+                    path.pop();
+                }
+            }
+            return min;
+        };
+
+        let bound = this.heuristic();
+        const path = ["[]"];
+        while (true) {
+            const t = search(path, 0, bound);
+            if (t === "found") {
+                return JSON.parse(path[path.length - 1]);
+            }
+            if (typeof t === "number" && t === Infinity) {
+                return [];
+            }
+            bound = t;
+        }
+    }
+
     private thistlethwaiteSolve(): string[] {
         const g0ToG1 = this.bruteForceSolve(
             [
