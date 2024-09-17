@@ -446,7 +446,7 @@ const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
         {
             .moveClass = 1,
             .moveType = 0,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_L
         {
@@ -464,7 +464,7 @@ const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
         {
             .moveClass = 1,
             .moveType = 1,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_F
         {
@@ -482,7 +482,7 @@ const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
         {
             .moveClass = 2,
             .moveType = 0,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_B
         {
@@ -500,7 +500,7 @@ const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
         {
             .moveClass = 2,
             .moveType = 1,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_UNAVAILABLE
         {
@@ -534,7 +534,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 0,
             .moveType = 0,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_D
         {
@@ -552,7 +552,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 0,
             .moveType = 1,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_R
         {
@@ -570,7 +570,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 1,
             .moveType = 0,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_L
         {
@@ -588,7 +588,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 1,
             .moveType = 1,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_F
         {
@@ -606,7 +606,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 2,
             .moveType = 0,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_B
         {
@@ -624,7 +624,7 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
         {
             .moveClass = 2,
             .moveType = 1,
-            .move = 2,
+            .move = 0,
         },
         // MOVE_UNAVAILABLE
         {
@@ -1070,26 +1070,32 @@ int g2ToG3Solve(
     return algorithmLength;
 }
 
+#include <stdio.h>
+void printAlgorithm(const Move algorithm[], int algorithmLength);
+
 int g3ToG4Solve(
     const Cube* cube,
     Move algorithm[],
     int algorithmCapacity)
 {
     int algorithmLength = 0;
+    int counter = 0;
     while (algorithmLength < algorithmCapacity) {
         Cube newCube = *cube;
         executeAlgorithm(&newCube, algorithm, algorithmLength);
         if (isCubeSolved(&newCube)) {
             return algorithmLength;
         }
+        if (counter < 1000000) {
+            printAlgorithm(algorithm, algorithmLength);
+            //printf("%d\n", algorithmLength);
+            counter++;
+        }
         algorithmLength = iterateAlgorithm(algorithm, algorithmLength, &AVAILABLE_MOVES_G3_G4);
     }
     /* The code should only reach here if algorithmCapacity is <= 15 */
     return algorithmLength;
 }
-
-#include <stdio.h>
-void printAlgorithm(const Move algorithm[], int algorithmLength);
 
 int thistlethwaiteSolve(
     const Cube* cube,
@@ -1100,49 +1106,59 @@ int thistlethwaiteSolve(
     Cube copyCube = *cube;
 
     /* G0 to G1 */
-    Move g0ToG1Algorithm[8];
-    int g0ToG1AlgorithmLength = g0ToG1Solve(&copyCube, g0ToG1Algorithm, 8);
-    for (int i = 0; i < g0ToG1AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
-        algorithm[i] = g0ToG1Algorithm[i];
-        algorithmLength++;
-    }
-    executeAlgorithm(&copyCube, g0ToG1Algorithm, g0ToG1AlgorithmLength);
+    {
+        Move g0ToG1Algorithm[8];
+        int g0ToG1AlgorithmLength = g0ToG1Solve(&copyCube, g0ToG1Algorithm, 8);
+        for (int i = 0; i < g0ToG1AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
+            algorithm[algorithmLength] = g0ToG1Algorithm[i];
+            algorithmLength++;
+        }
+        executeAlgorithm(&copyCube, g0ToG1Algorithm, g0ToG1AlgorithmLength);
 
-    printf("G0 to G1 done.\n");
-    printAlgorithm(g0ToG1Algorithm, g0ToG1AlgorithmLength);
+        printf("G0 to G1 done.\n");
+        printAlgorithm(g0ToG1Algorithm, g0ToG1AlgorithmLength);
+    }
 
     /* G1 to G2 */
-    Move g1ToG2Algorithm[11];
-    int g1ToG2AlgorithmLength = g1ToG2Solve(&copyCube, g1ToG2Algorithm, 11);
-    for (int i = 0; i < g1ToG2AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
-        algorithm[i] = g1ToG2Algorithm[i];
-        algorithmLength++;
-    }
-    executeAlgorithm(&copyCube, g1ToG2Algorithm, g1ToG2AlgorithmLength);
+    {
+        Move g1ToG2Algorithm[11];
+        int g1ToG2AlgorithmLength = g1ToG2Solve(&copyCube, g1ToG2Algorithm, 11);
+        for (int i = 0; i < g1ToG2AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
+            algorithm[algorithmLength] = g1ToG2Algorithm[i];
+            algorithmLength++;
+        }
+        executeAlgorithm(&copyCube, g1ToG2Algorithm, g1ToG2AlgorithmLength);
 
-    printf("G1 to G2 done.\n");
-    printAlgorithm(g1ToG2Algorithm, g1ToG2AlgorithmLength);
+        printf("G1 to G2 done.\n");
+        printAlgorithm(g1ToG2Algorithm, g1ToG2AlgorithmLength);
+    }
 
     /* G2 to G3 */
-    Move g2ToG3Algorithm[14];
-    int g2ToG3AlgorithmLength = g2ToG3Solve(&copyCube, g2ToG3Algorithm, 14);
-    for (int i = 0; i < g2ToG3AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
-        algorithm[i] = g2ToG3Algorithm[i];
-        algorithmLength++;
-    }
-    executeAlgorithm(&copyCube, g2ToG3Algorithm, g2ToG3AlgorithmLength);
+    {
+        Move g2ToG3Algorithm[14];
+        int g2ToG3AlgorithmLength = g2ToG3Solve(&copyCube, g2ToG3Algorithm, 14);
+        for (int i = 0; i < g2ToG3AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
+            algorithm[algorithmLength] = g2ToG3Algorithm[i];
+            algorithmLength++;
+        }
+        executeAlgorithm(&copyCube, g2ToG3Algorithm, g2ToG3AlgorithmLength);
 
-    printf("G2 to G3 done.\n");
-    printAlgorithm(g2ToG3Algorithm, g2ToG3AlgorithmLength);
+        printf("G2 to G3 done.\n");
+        printAlgorithm(g2ToG3Algorithm, g2ToG3AlgorithmLength);
+    }
 
     /* G3 to G4 */
-    Move g3ToG4Algorithm[16];
-    int g3ToG4AlgorithmLength = g3ToG4Solve(&copyCube, g3ToG4Algorithm, 16);
-    for (int i = 0; i < g3ToG4AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
-        algorithm[i] = g3ToG4Algorithm[i];
-        algorithmLength++;
+    {
+        Move g3ToG4Algorithm[16];
+        int g3ToG4AlgorithmLength = g3ToG4Solve(&copyCube, g3ToG4Algorithm, 16);
+        for (int i = 0; i < g3ToG4AlgorithmLength && algorithmLength < algorithmCapacity; i++) {
+            algorithm[algorithmLength] = g3ToG4Algorithm[i];
+            algorithmLength++;
+        }
+        printf("G3 to G4 done.\n");
+        printAlgorithm(g3ToG4Algorithm, g3ToG4AlgorithmLength);
     }
-    printf("G3 to G4 done.\n");
+
     return algorithmLength;
 }
 
@@ -1240,28 +1256,33 @@ void printAlgorithm(const Move algorithm[], int algorithmLength)
 int main()
 {
     const Move tPerm[] = {
+        MOVE_L2,
+        MOVE_R2,
+        MOVE_BCC,
+        MOVE_L2,
+        MOVE_U2,
+        MOVE_L2,
+        MOVE_U2,
+        MOVE_R2,
+        MOVE_BCC,
+        MOVE_D2,
+        MOVE_B,
+        MOVE_LCC,
+        MOVE_F2,
         MOVE_R,
-        MOVE_U,
-        MOVE_RCC,
-        MOVE_UCC,
-        MOVE_RCC,
+        MOVE_D,
         MOVE_F,
         MOVE_R2,
-        MOVE_UCC,
-        MOVE_RCC,
-        MOVE_UCC,
-        MOVE_R,
-        MOVE_U,
-        MOVE_RCC,
-        MOVE_FCC,
+        MOVE_F2,
+        MOVE_UCC
     };
 
     Cube cube = SOLVED_CUBE;
 
     executeAlgorithm(&cube, tPerm, sizeof(tPerm) / sizeof(Move));
 
-    Move algorithm[50];
-    int algorithmLength = thistlethwaiteSolve(&cube, algorithm, 50);
+    Move algorithm[100];
+    int algorithmLength = thistlethwaiteSolve(&cube, algorithm, 100);
 
     printAlgorithm(algorithm, algorithmLength);
 
