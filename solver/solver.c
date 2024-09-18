@@ -640,9 +640,10 @@ static const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
     },
 };
 
-Cube globalCube;
-Move globalAlgorithm[100];
-int globalAlgorithmIndex;
+static Cube globalCube;
+static Move globalAlgorithm[100];
+static int globalAlgorithmIndex;
+static int globalAlgorithmLength;
 
 /* Function prototypes */
 static void swapFour(
@@ -698,6 +699,10 @@ extern void setEdgeOrientation(int index, int orientation);
 extern void setCornerId(int index, int id);
 extern void setCornerOrientation(int index, int orientation);
 extern void solve(void);
+extern void resetAlg(void);
+extern void pushMove(int move);
+extern void executeAlg(void);
+extern int isSolved(void);
 extern int popMove(void);
 
 /* Functions */
@@ -1242,18 +1247,39 @@ void setCornerOrientation(int index, int orientation)
 
 void solve(void)
 {
-    int algorithmLength = thistlethwaiteSolve(&globalCube, globalAlgorithm, 100);
-    globalAlgorithm[algorithmLength] = MOVE_UNAVAILABLE;
+    resetAlg();
+    globalAlgorithmLength = thistlethwaiteSolve(&globalCube, globalAlgorithm, 100);
+}
+
+void resetAlg(void)
+{
     globalAlgorithmIndex = 0;
+    globalAlgorithmLength = 0;
+}
+
+void pushMove(int move)
+{
+    globalAlgorithm[globalAlgorithmLength] = move;
+    globalAlgorithmLength++;
+}
+
+void executeAlg(void)
+{
+    executeAlgorithm(&globalCube, globalAlgorithm, globalAlgorithmLength);
+}
+
+int isSolved(void)
+{
+    return isCubeSolved(&globalCube);
 }
 
 int popMove(void)
 {
-    int returnValue = globalAlgorithm[globalAlgorithmIndex];
-    if (returnValue != MOVE_UNAVAILABLE) {
+    if (globalAlgorithmIndex < globalAlgorithmLength) {
         globalAlgorithmIndex++;
+        return globalAlgorithm[globalAlgorithmIndex - 1];
     }
-    return returnValue;
+    return MOVE_UNAVAILABLE;
 }
 
 /* Debugging */
