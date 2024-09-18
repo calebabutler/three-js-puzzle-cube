@@ -1258,159 +1258,159 @@ int popMove(void)
 
 /* Debugging */
 
-#include <stdio.h>
+// #include <stdio.h>
 
-/* Function prototypes */
-static void printAlgorithm(const Move algorithm[], int algorithmLength);
-extern int main(void);
+// /* Function prototypes */
+// static void printAlgorithm(const Move algorithm[], int algorithmLength);
+// extern int main(void);
 
-/* Potential function to print the cube */
-// void printCube(const Cube* cube)
+// /* Potential function to print the cube */
+// // void printCube(const Cube* cube)
+// // {
+// //     printf("{\n");
+// //     printf(" \tedges: {\n");
+// //     for (int i = 0; i < 12; i++) {
+// //         printf("\t\t{ id: %d, orientation: %d },\n", cube->edges[i].id,
+// //                cube->edges[i].orientation);
+// //     }
+// //     printf("\t},\n");
+// //     printf(" \tcorners: {\n");
+// //     for (int i = 0; i < 8; i++) {
+// //         printf("\t\t{ id: %d, orientation: %d },\n", cube->corners[i].id,
+// //                cube->corners[i].orientation);
+// //     }
+// //     printf("\t},\n");
+// //     printf("}\n");
+// // }
+
+// void printAlgorithm(const Move algorithm[], int algorithmLength)
 // {
-//     printf("{\n");
-//     printf(" \tedges: {\n");
-//     for (int i = 0; i < 12; i++) {
-//         printf("\t\t{ id: %d, orientation: %d },\n", cube->edges[i].id,
-//                cube->edges[i].orientation);
+//     for (int i = 0; i < algorithmLength; i++) {
+//         switch (algorithm[i]) {
+//         case MOVE_U:
+//             printf("U");
+//             break;
+//         case MOVE_UCC:
+//             printf("U'");
+//             break;
+//         case MOVE_U2:
+//             printf("U2");
+//             break;
+//         case MOVE_D:
+//             printf("D");
+//             break;
+//         case MOVE_DCC:
+//             printf("D'");
+//             break;
+//         case MOVE_D2:
+//             printf("D2");
+//             break;
+//         case MOVE_R:
+//             printf("R");
+//             break;
+//         case MOVE_RCC:
+//             printf("R'");
+//             break;
+//         case MOVE_R2:
+//             printf("R2");
+//             break;
+//         case MOVE_L:
+//             printf("L");
+//             break;
+//         case MOVE_LCC:
+//             printf("L'");
+//             break;
+//         case MOVE_L2:
+//             printf("L2");
+//             break;
+//         case MOVE_F:
+//             printf("F");
+//             break;
+//         case MOVE_FCC:
+//             printf("F'");
+//             break;
+//         case MOVE_F2:
+//             printf("F2");
+//             break;
+//         case MOVE_B:
+//             printf("B");
+//             break;
+//         case MOVE_BCC:
+//             printf("B'");
+//             break;
+//         case MOVE_B2:
+//             printf("B2");
+//             break;
+//         case MOVE_UNAVAILABLE:
+//             printf("UNAVAILABLE");
+//             break;
+//         }
+//         if (i < algorithmLength - 1) {
+//             printf(" ");
+//         }
 //     }
-//     printf("\t},\n");
-//     printf(" \tcorners: {\n");
-//     for (int i = 0; i < 8; i++) {
-//         printf("\t\t{ id: %d, orientation: %d },\n", cube->corners[i].id,
-//                cube->corners[i].orientation);
-//     }
-//     printf("\t},\n");
-//     printf("}\n");
+//     printf("\n");
 // }
 
-void printAlgorithm(const Move algorithm[], int algorithmLength)
-{
-    for (int i = 0; i < algorithmLength; i++) {
-        switch (algorithm[i]) {
-        case MOVE_U:
-            printf("U");
-            break;
-        case MOVE_UCC:
-            printf("U'");
-            break;
-        case MOVE_U2:
-            printf("U2");
-            break;
-        case MOVE_D:
-            printf("D");
-            break;
-        case MOVE_DCC:
-            printf("D'");
-            break;
-        case MOVE_D2:
-            printf("D2");
-            break;
-        case MOVE_R:
-            printf("R");
-            break;
-        case MOVE_RCC:
-            printf("R'");
-            break;
-        case MOVE_R2:
-            printf("R2");
-            break;
-        case MOVE_L:
-            printf("L");
-            break;
-        case MOVE_LCC:
-            printf("L'");
-            break;
-        case MOVE_L2:
-            printf("L2");
-            break;
-        case MOVE_F:
-            printf("F");
-            break;
-        case MOVE_FCC:
-            printf("F'");
-            break;
-        case MOVE_F2:
-            printf("F2");
-            break;
-        case MOVE_B:
-            printf("B");
-            break;
-        case MOVE_BCC:
-            printf("B'");
-            break;
-        case MOVE_B2:
-            printf("B2");
-            break;
-        case MOVE_UNAVAILABLE:
-            printf("UNAVAILABLE");
-            break;
-        }
-        if (i < algorithmLength - 1) {
-            printf(" ");
-        }
-    }
-    printf("\n");
-}
+// int main(void)
+// {
+//     // Generating this from a scramble on the web using node
+//     // const f = a => console.log(a.split(" ").map(m => `MOVE_${m[0]}` + (m[1] === "2" ? "2" : m[1] === "'" ? "CC" : "")).join(",\n"))
+//     const Move scramble[] = {
+//         MOVE_UCC,
+//         MOVE_R2,
+//         MOVE_D2,
+//         MOVE_B,
+//         MOVE_F2,
+//         MOVE_D2,
+//         MOVE_R2,
+//         MOVE_F2,
+//         MOVE_R2,
+//         MOVE_F2,
+//         MOVE_R2,
+//         MOVE_F2,
+//         MOVE_U2,
+//         MOVE_R,
+//         MOVE_D2,
+//         MOVE_R,
+//         MOVE_UCC,
+//         MOVE_B,
+//         MOVE_RCC,
+//         MOVE_B2,
+//         MOVE_UCC
+//     };
 
-int main(void)
-{
-    // Generating this from a scramble on the web using node
-    // const f = a => console.log(a.split(" ").map(m => `MOVE_${m[0]}` + (m[1] === "2" ? "2" : m[1] === "'" ? "CC" : "")).join(",\n"))
-    const Move scramble[] = {
-        MOVE_UCC,
-        MOVE_R2,
-        MOVE_D2,
-        MOVE_B,
-        MOVE_F2,
-        MOVE_D2,
-        MOVE_R2,
-        MOVE_F2,
-        MOVE_R2,
-        MOVE_F2,
-        MOVE_R2,
-        MOVE_F2,
-        MOVE_U2,
-        MOVE_R,
-        MOVE_D2,
-        MOVE_R,
-        MOVE_UCC,
-        MOVE_B,
-        MOVE_RCC,
-        MOVE_B2,
-        MOVE_UCC
-    };
+//     Cube cube = SOLVED_CUBE;
 
-    Cube cube = SOLVED_CUBE;
+//     executeAlgorithm(&cube, scramble, sizeof(scramble) / sizeof(Move));
 
-    executeAlgorithm(&cube, scramble, sizeof(scramble) / sizeof(Move));
+//     resetCube();
 
-    resetCube();
+//     for (int i = 0; i < 12; i++) {
+//         setEdgeId(i, cube.edges[i].id);
+//         setEdgeOrientation(i, cube.edges[i].orientation);
+//     }
 
-    for (int i = 0; i < 12; i++) {
-        setEdgeId(i, cube.edges[i].id);
-        setEdgeOrientation(i, cube.edges[i].orientation);
-    }
+//     for (int i = 0; i < 8; i++) {
+//         setCornerId(i, cube.corners[i].id);
+//         setCornerOrientation(i, cube.corners[i].orientation);
+//     }
 
-    for (int i = 0; i < 8; i++) {
-        setCornerId(i, cube.corners[i].id);
-        setCornerOrientation(i, cube.corners[i].orientation);
-    }
+//     solve();
 
-    solve();
+//     Move algorithm[100];
+//     int algorithmLength = 0;
 
-    Move algorithm[100];
-    int algorithmLength = 0;
+//     while (BOOLEAN_TRUE) {
+//         Move move = (Move) popMove();
+//         if (move == MOVE_UNAVAILABLE) {
+//             break;
+//         }
+//         algorithm[algorithmLength] = move;
+//         algorithmLength++;
+//     }
 
-    while (BOOLEAN_TRUE) {
-        Move move = (Move) popMove();
-        if (move == MOVE_UNAVAILABLE) {
-            break;
-        }
-        algorithm[algorithmLength] = move;
-        algorithmLength++;
-    }
+//     printAlgorithm(algorithm, algorithmLength);
 
-    printAlgorithm(algorithm, algorithmLength);
-
-    return 0;
-}
+//     return 0;
+// }
