@@ -1079,17 +1079,11 @@ int g3ToG4Solve(
     int algorithmCapacity)
 {
     int algorithmLength = 0;
-    int counter = 0;
     while (algorithmLength < algorithmCapacity) {
         Cube newCube = *cube;
         executeAlgorithm(&newCube, algorithm, algorithmLength);
         if (isCubeSolved(&newCube)) {
             return algorithmLength;
-        }
-        if (counter < 1000000) {
-            printAlgorithm(algorithm, algorithmLength);
-            //printf("%d\n", algorithmLength);
-            counter++;
         }
         algorithmLength = iterateAlgorithm(algorithm, algorithmLength, &AVAILABLE_MOVES_G3_G4);
     }

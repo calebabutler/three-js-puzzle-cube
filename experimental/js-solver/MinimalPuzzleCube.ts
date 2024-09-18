@@ -241,6 +241,8 @@ const iterateAlgorithm = (
     }
 };
 
+let experimentalSolveLevel = 0;
+
 export class MinimalPuzzleCube {
     private edges: Edges;
     private corners: Corners;
@@ -724,7 +726,7 @@ export class MinimalPuzzleCube {
         }
     }
 
-    private thistlethwaiteSolve(): string[] {
+    thistlethwaiteSolve(): string[] {
         const g0ToG1 = this.bruteForceSolve(
             [
                 [
@@ -751,6 +753,8 @@ export class MinimalPuzzleCube {
         );
         const g1Cube = this.copy();
         g1Cube.executeAlgorithm(g0ToG1);
+
+        console.log(`G1 Done: ${g0ToG1}`);
 
         const g1ToG2 = g1Cube.bruteForceSolve(
             [
@@ -780,6 +784,8 @@ export class MinimalPuzzleCube {
         );
         const g2Cube = g1Cube.copy();
         g2Cube.executeAlgorithm(g1ToG2);
+
+        console.log(`G2 Done: ${g1ToG2}`);
 
         const g2ToG3 = g2Cube.bruteForceSolve(
             [
@@ -812,6 +818,8 @@ export class MinimalPuzzleCube {
         const g3Cube = g2Cube.copy();
         g3Cube.executeAlgorithm(g2ToG3);
 
+        console.log(`G3 Done: ${g2ToG3}`);
+
         const solvedCube = MinimalPuzzleCube.getSolvedCube();
 
         const g3ToG4 = g3Cube.bruteForceSolve(
@@ -824,6 +832,64 @@ export class MinimalPuzzleCube {
         );
 
         return g0ToG1.concat(g1ToG2).concat(g2ToG3).concat(g3ToG4);
+    }
+
+    
+    kociembaSolve(): string[] {
+        const g0ToG1 = this.bruteForceSolve(
+            [
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [
+                    ["R", "R'", "R2"],
+                    ["L", "L'", "L2"],
+                ],
+                [
+                    ["F", "F'", "F2"],
+                    ["B", "B'", "B2"],
+                ],
+            ],
+            (cube: MinimalPuzzleCube): boolean => {
+                for (const corner of cube.corners) {
+                    if (corner.orientation !== 0) {
+                        return false;
+                    }
+                }
+                for (const edge of cube.edges) {
+                    if (edge.orientation !== 0) {
+                        return false;
+                    }
+                }
+                for (let i = 4; i < 8; i++) {
+                    if (cube.edges[i].id < 4 || cube.edges[i].id >= 8) {
+                        return false;
+                    }
+                }
+                return true;
+            },
+        );
+        const g1Cube = this.copy();
+        g1Cube.executeAlgorithm(g0ToG1);
+
+        console.log(`G1 Done: ${g0ToG1}`);
+
+        const solvedCube = MinimalPuzzleCube.getSolvedCube();
+
+        const g1ToG2 = g1Cube.bruteForceSolve(
+            [
+                [
+                    ["U", "U'", "U2"],
+                    ["D", "D'", "D2"],
+                ],
+                [["R2"], ["L2"]],
+                [["F2"], ["B2"]],
+            ],
+            (cube: MinimalPuzzleCube): boolean => cube.equals(solvedCube),
+        );
+
+        return g0ToG1.concat(g1ToG2);
     }
 
     solve(): string[] {
