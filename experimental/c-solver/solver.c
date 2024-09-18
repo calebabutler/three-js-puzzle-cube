@@ -640,6 +640,10 @@ static const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
     },
 };
 
+Cube globalCube;
+Move globalAlgorithm[100];
+int globalAlgorithmIndex;
+
 /* Function prototypes */
 static void swapFour(
     Cubie array[],
@@ -667,10 +671,6 @@ static int iterateAlgorithm(
     int algorithmLength,
     const AvailableMoves* availableMoves);
 static Boolean isCubeSolved(const Cube* cube);
-static int bruteForceSolve(
-    const Cube* cube,
-    Move algorithm[],
-    int algorithmCapacity);
 static int g0ToG1Solve(
     const Cube* cube,
     Move algorithm[],
@@ -691,6 +691,14 @@ static int thistlethwaiteSolve(
     const Cube* cube,
     Move algorithm[],
     int algorithmCapacity);
+
+extern void resetCube(void);
+extern void setEdgeId(int index, int id);
+extern void setEdgeOrientation(int index, int orientation);
+extern void setCornerId(int index, int id);
+extern void setCornerOrientation(int index, int orientation);
+extern void solve(void);
+extern int popMove(void);
 
 /* Functions */
 
@@ -1005,24 +1013,23 @@ Boolean isCubeSolved(const Cube* cube)
     return BOOLEAN_TRUE;
 }
 
-/* This function is not used anywhere, but is the simplest solver you could
-   write */
-int bruteForceSolve(
-    const Cube* cube,
-    Move algorithm[],
-    int algorithmCapacity)
-{
-    int algorithmLength = 0;
-    while (algorithmLength < algorithmCapacity) {
-        Cube newCube = *cube;
-        executeAlgorithm(&newCube, algorithm, algorithmLength);
-        if (isCubeSolved(&newCube)) {
-            return algorithmLength;
-        }
-        algorithmLength = iterateAlgorithm(algorithm, algorithmLength, &AVAILABLE_MOVES_BRUTE_FORCE);
-    }
-    return algorithmLength;
-}
+/* This function is the simplest solver you could write */
+// int bruteForceSolve(
+//     const Cube* cube,
+//     Move algorithm[],
+//     int algorithmCapacity)
+// {
+//     int algorithmLength = 0;
+//     while (algorithmLength < algorithmCapacity) {
+//         Cube newCube = *cube;
+//         executeAlgorithm(&newCube, algorithm, algorithmLength);
+//         if (isCubeSolved(&newCube)) {
+//             return algorithmLength;
+//         }
+//         algorithmLength = iterateAlgorithm(algorithm, algorithmLength, &AVAILABLE_MOVES_BRUTE_FORCE);
+//     }
+//     return algorithmLength;
+// }
 
 int g0ToG1Solve(
     const Cube* cube,
@@ -1206,32 +1213,75 @@ int thistlethwaiteSolve(
     return algorithmLength;
 }
 
+/* Interface to be used by TypeScript */
+
+void resetCube(void)
+{
+    globalCube = SOLVED_CUBE;
+}
+
+void setEdgeId(int index, int id)
+{
+    globalCube.edges[index].id = id;
+}
+
+void setEdgeOrientation(int index, int orientation)
+{
+    globalCube.edges[index].orientation = orientation;
+}
+
+void setCornerId(int index, int id)
+{
+    globalCube.corners[index].id = id;
+}
+
+void setCornerOrientation(int index, int orientation)
+{
+    globalCube.corners[index].orientation = orientation;
+}
+
+void solve(void)
+{
+    int algorithmLength = thistlethwaiteSolve(&globalCube, globalAlgorithm, 100);
+    globalAlgorithm[algorithmLength] = MOVE_UNAVAILABLE;
+    globalAlgorithmIndex = 0;
+}
+
+int popMove(void)
+{
+    int returnValue = globalAlgorithm[globalAlgorithmIndex];
+    if (returnValue != MOVE_UNAVAILABLE) {
+        globalAlgorithmIndex++;
+    }
+    return returnValue;
+}
+
 /* Debugging */
 
 #include <stdio.h>
 
 /* Function prototypes */
-static void printCube(const Cube* cube);
 static void printAlgorithm(const Move algorithm[], int algorithmLength);
 extern int main(void);
 
-void printCube(const Cube* cube)
-{
-    printf("{\n");
-    printf(" \tedges: {\n");
-    for (int i = 0; i < 12; i++) {
-        printf("\t\t{ id: %d, orientation: %d },\n", cube->edges[i].id,
-               cube->edges[i].orientation);
-    }
-    printf("\t},\n");
-    printf(" \tcorners: {\n");
-    for (int i = 0; i < 8; i++) {
-        printf("\t\t{ id: %d, orientation: %d },\n", cube->corners[i].id,
-               cube->corners[i].orientation);
-    }
-    printf("\t},\n");
-    printf("}\n");
-}
+/* Potential function to print the cube */
+// void printCube(const Cube* cube)
+// {
+//     printf("{\n");
+//     printf(" \tedges: {\n");
+//     for (int i = 0; i < 12; i++) {
+//         printf("\t\t{ id: %d, orientation: %d },\n", cube->edges[i].id,
+//                cube->edges[i].orientation);
+//     }
+//     printf("\t},\n");
+//     printf(" \tcorners: {\n");
+//     for (int i = 0; i < 8; i++) {
+//         printf("\t\t{ id: %d, orientation: %d },\n", cube->corners[i].id,
+//                cube->corners[i].orientation);
+//     }
+//     printf("\t},\n");
+//     printf("}\n");
+// }
 
 void printAlgorithm(const Move algorithm[], int algorithmLength)
 {
@@ -1304,35 +1354,61 @@ void printAlgorithm(const Move algorithm[], int algorithmLength)
 
 int main(void)
 {
-    const Move tPerm[] = {
-        MOVE_L2,
-        MOVE_U,
-        MOVE_B2,
-        MOVE_L2,
-        MOVE_B2,
-        MOVE_DCC,
+    // Generating this from a scramble on the web using node
+    // const f = a => console.log(a.split(" ").map(m => `MOVE_${m[0]}` + (m[1] === "2" ? "2" : m[1] === "'" ? "CC" : "")).join(",\n"))
+    const Move scramble[] = {
+        MOVE_UCC,
         MOVE_R2,
-        MOVE_D,
-        MOVE_L2,
+        MOVE_D2,
+        MOVE_B,
         MOVE_F2,
+        MOVE_D2,
+        MOVE_R2,
+        MOVE_F2,
+        MOVE_R2,
+        MOVE_F2,
+        MOVE_R2,
+        MOVE_F2,
+        MOVE_U2,
+        MOVE_R,
         MOVE_D2,
         MOVE_R,
+        MOVE_UCC,
+        MOVE_B,
+        MOVE_RCC,
         MOVE_B2,
-        MOVE_FCC,
-        MOVE_D2,
-        MOVE_BCC,
-        MOVE_U,
-        MOVE_B2,
-        MOVE_F2,
-        MOVE_U
+        MOVE_UCC
     };
 
     Cube cube = SOLVED_CUBE;
 
-    executeAlgorithm(&cube, tPerm, sizeof(tPerm) / sizeof(Move));
+    executeAlgorithm(&cube, scramble, sizeof(scramble) / sizeof(Move));
+
+    resetCube();
+
+    for (int i = 0; i < 12; i++) {
+        setEdgeId(i, cube.edges[i].id);
+        setEdgeOrientation(i, cube.edges[i].orientation);
+    }
+
+    for (int i = 0; i < 8; i++) {
+        setCornerId(i, cube.corners[i].id);
+        setCornerOrientation(i, cube.corners[i].orientation);
+    }
+
+    solve();
 
     Move algorithm[100];
-    int algorithmLength = thistlethwaiteSolve(&cube, algorithm, 100);
+    int algorithmLength = 0;
+
+    while (BOOLEAN_TRUE) {
+        Move move = (Move) popMove();
+        if (move == MOVE_UNAVAILABLE) {
+            break;
+        }
+        algorithm[algorithmLength] = move;
+        algorithmLength++;
+    }
 
     printAlgorithm(algorithm, algorithmLength);
 
