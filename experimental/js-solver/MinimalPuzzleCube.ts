@@ -812,6 +812,29 @@ export class MinimalPuzzleCube {
                         return false;
                     }
                 }
+                // Check the orbits!
+                const a = cube.corners[0].id;
+                const b = cube.corners[2].id;
+                const c = cube.corners[4].id;
+                const d = cube.corners[6].id;
+                if (!(cube.corners[1].id === (a + 1) % 8
+                && cube.corners[3].id === (b + 1) % 8
+                && cube.corners[5].id === (c + 1) % 8
+                && cube.corners[7].id === (d + 1) % 8)
+                && !(cube.corners[1].id === (b + 1) % 8
+                && cube.corners[3].id === (a + 1) % 8
+                && cube.corners[5].id === (d + 1) % 8
+                && cube.corners[7].id === (c + 1) % 8)
+                && !(cube.corners[1].id === (c + 1) % 8
+                && cube.corners[3].id === (d + 1) % 8
+                && cube.corners[5].id === (a + 1) % 8
+                && cube.corners[7].id === (b + 1) % 8)
+                && !(cube.corners[1].id === (d + 1) % 8
+                && cube.corners[3].id === (c + 1) % 8
+                && cube.corners[5].id === (b + 1) % 8
+                && cube.corners[7].id === (a + 1) % 8)) {
+                    return false;
+                }
                 return true;
             },
         );

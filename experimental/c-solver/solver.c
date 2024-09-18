@@ -1061,6 +1061,29 @@ int g2ToG3Solve(
                 isCubeG3 = BOOLEAN_FALSE;
             }
         }
+        // Check corner orbits!
+        int a = newCube.corners[0].id;
+        int b = newCube.corners[2].id;
+        int c = newCube.corners[4].id;
+        int d = newCube.corners[6].id;
+        if (!(newCube.corners[1].id == (a + 1) % 8
+           && newCube.corners[3].id == (b + 1) % 8
+           && newCube.corners[5].id == (c + 1) % 8
+           && newCube.corners[7].id == (d + 1) % 8)
+         && !(newCube.corners[1].id == (b + 1) % 8
+           && newCube.corners[3].id == (a + 1) % 8
+           && newCube.corners[5].id == (d + 1) % 8
+           && newCube.corners[7].id == (c + 1) % 8)
+         && !(newCube.corners[1].id == (c + 1) % 8
+           && newCube.corners[3].id == (d + 1) % 8
+           && newCube.corners[5].id == (a + 1) % 8
+           && newCube.corners[7].id == (b + 1) % 8)
+         && !(newCube.corners[1].id == (d + 1) % 8
+           && newCube.corners[3].id == (c + 1) % 8
+           && newCube.corners[5].id == (b + 1) % 8
+           && newCube.corners[7].id == (a + 1) % 8)) {
+            isCubeG3 = BOOLEAN_FALSE;
+        }
         if (isCubeG3) {
             return algorithmLength;
         }
@@ -1251,24 +1274,25 @@ int main()
 {
     const Move tPerm[] = {
         MOVE_L2,
-        MOVE_R2,
-        MOVE_BCC,
+        MOVE_U,
+        MOVE_B2,
         MOVE_L2,
-        MOVE_U2,
-        MOVE_L2,
-        MOVE_U2,
+        MOVE_B2,
+        MOVE_DCC,
         MOVE_R2,
-        MOVE_BCC,
-        MOVE_D2,
-        MOVE_B,
-        MOVE_LCC,
-        MOVE_F2,
-        MOVE_R,
         MOVE_D,
-        MOVE_F,
-        MOVE_R2,
+        MOVE_L2,
         MOVE_F2,
-        MOVE_UCC
+        MOVE_D2,
+        MOVE_R,
+        MOVE_B2,
+        MOVE_FCC,
+        MOVE_D2,
+        MOVE_BCC,
+        MOVE_U,
+        MOVE_B2,
+        MOVE_F2,
+        MOVE_U
     };
 
     Cube cube = SOLVED_CUBE;
