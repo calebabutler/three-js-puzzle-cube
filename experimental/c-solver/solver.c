@@ -1005,6 +1005,8 @@ Boolean isCubeSolved(const Cube* cube)
     return BOOLEAN_TRUE;
 }
 
+/* This function is not used anywhere, but is the simplest solver you could
+   write */
 int bruteForceSolve(
     const Cube* cube,
     Move algorithm[],
