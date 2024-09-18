@@ -57,7 +57,7 @@ typedef enum _Boolean Boolean;
 
 /* Globals */
 
-const Cube SOLVED_CUBE = {
+static const Cube SOLVED_CUBE = {
     .edges = {
         {
             .id = 0,
@@ -144,7 +144,7 @@ const Cube SOLVED_CUBE = {
     },
 };
 
-const AvailableMoves AVAILABLE_MOVES_BRUTE_FORCE = {
+static const AvailableMoves AVAILABLE_MOVES_BRUTE_FORCE = {
     .moveToIndex = {
         // MOVE_U
         {
@@ -268,7 +268,7 @@ const AvailableMoves AVAILABLE_MOVES_BRUTE_FORCE = {
     },
 };
 
-const AvailableMoves AVAILABLE_MOVES_G1_G2 = {
+static const AvailableMoves AVAILABLE_MOVES_G1_G2 = {
     .moveToIndex = {
         // MOVE_U
         {
@@ -392,7 +392,7 @@ const AvailableMoves AVAILABLE_MOVES_G1_G2 = {
     },
 };
 
-const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
+static const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
     .moveToIndex = {
         // MOVE_U
         {
@@ -516,7 +516,7 @@ const AvailableMoves AVAILABLE_MOVES_G2_G3 = {
     },
 };
 
-const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
+static const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
     .moveToIndex = {
         // MOVE_U
         {
@@ -640,18 +640,57 @@ const AvailableMoves AVAILABLE_MOVES_G3_G4 = {
     },
 };
 
-// MIGHT add this later for allocating heap, currently unsure
-
-// extern unsigned char __heap_base;
-
-// unsigned char* bumpPointer = &__heap_base;
-
-// void* allocateHeap(int n)
-// {
-//     unsigned char* r = bumpPointer;
-//     bumpPointer += n;
-//     return (void*) r;
-// }
+/* Function prototypes */
+static void swapFour(
+    Cubie array[],
+    int resultIndex1,
+    int resultIndex2,
+    int resultIndex3,
+    int resultIndex4,
+    int index1,
+    int index2,
+    int index3,
+    int index4);
+static void executeMove(Cube* cube, Move move);
+static void executeAlgorithm(Cube* cube, const Move algorithm[], int length);
+static Move iterateMove(
+    Move move,
+    const AvailableMoves* availableMoves,
+    const Move previousMoves[],
+    int previousMovesLength);
+static Move getFirstAllowedMove(
+    const AvailableMoves* availableMoves,
+    const Move previousMoves[],
+    int previousMovesLength);
+static int iterateAlgorithm(
+    Move algorithm[],
+    int algorithmLength,
+    const AvailableMoves* availableMoves);
+static Boolean isCubeSolved(const Cube* cube);
+static int bruteForceSolve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
+static int g0ToG1Solve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
+static int g1ToG2Solve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
+static int g2ToG3Solve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
+static int g3ToG4Solve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
+static int thistlethwaiteSolve(
+    const Cube* cube,
+    Move algorithm[],
+    int algorithmCapacity);
 
 /* Functions */
 
@@ -1093,9 +1132,6 @@ int g2ToG3Solve(
     return algorithmLength;
 }
 
-#include <stdio.h>
-void printAlgorithm(const Move algorithm[], int algorithmLength);
-
 int g3ToG4Solve(
     const Cube* cube,
     Move algorithm[],
@@ -1131,9 +1167,6 @@ int thistlethwaiteSolve(
             algorithmLength++;
         }
         executeAlgorithm(&copyCube, g0ToG1Algorithm, g0ToG1AlgorithmLength);
-
-        printf("G0 to G1 done.\n");
-        printAlgorithm(g0ToG1Algorithm, g0ToG1AlgorithmLength);
     }
 
     /* G1 to G2 */
@@ -1145,9 +1178,6 @@ int thistlethwaiteSolve(
             algorithmLength++;
         }
         executeAlgorithm(&copyCube, g1ToG2Algorithm, g1ToG2AlgorithmLength);
-
-        printf("G1 to G2 done.\n");
-        printAlgorithm(g1ToG2Algorithm, g1ToG2AlgorithmLength);
     }
 
     /* G2 to G3 */
@@ -1159,9 +1189,6 @@ int thistlethwaiteSolve(
             algorithmLength++;
         }
         executeAlgorithm(&copyCube, g2ToG3Algorithm, g2ToG3AlgorithmLength);
-
-        printf("G2 to G3 done.\n");
-        printAlgorithm(g2ToG3Algorithm, g2ToG3AlgorithmLength);
     }
 
     /* G3 to G4 */
@@ -1172,8 +1199,6 @@ int thistlethwaiteSolve(
             algorithm[algorithmLength] = g3ToG4Algorithm[i];
             algorithmLength++;
         }
-        printf("G3 to G4 done.\n");
-        printAlgorithm(g3ToG4Algorithm, g3ToG4AlgorithmLength);
     }
 
     return algorithmLength;
@@ -1182,6 +1207,11 @@ int thistlethwaiteSolve(
 /* Debugging */
 
 #include <stdio.h>
+
+/* Function prototypes */
+static void printCube(const Cube* cube);
+static void printAlgorithm(const Move algorithm[], int algorithmLength);
+extern int main(void);
 
 void printCube(const Cube* cube)
 {
@@ -1270,7 +1300,7 @@ void printAlgorithm(const Move algorithm[], int algorithmLength)
     printf("\n");
 }
 
-int main()
+int main(void)
 {
     const Move tPerm[] = {
         MOVE_L2,
