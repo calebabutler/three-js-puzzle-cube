@@ -66,7 +66,7 @@ export default class PuzzleCube {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(
             90,
-            window.innerWidth / window.innerHeight,
+            canvas.width / canvas.height,
             0.1,
             1000,
         );
@@ -74,7 +74,7 @@ export default class PuzzleCube {
             canvas: canvas,
             antialias: true,
         });
-        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setSize(canvas.width, canvas.height);
         this.cubies = [];
         this.moveQueue = [];
         this.currentMove = {
@@ -891,6 +891,12 @@ export default class PuzzleCube {
     }
 
     render(): void {
+        // Add event listener to update on window resize
+        window.addEventListener("resize", () => {
+            this.camera.aspect = this.canvas.width / this.canvas.height;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(this.canvas.width, this.canvas.height);
+        });
         // Add event listener to keep track of keyboard state
         this.canvas.addEventListener("keydown", (e) => {
             this.handleKeyDown(e);
